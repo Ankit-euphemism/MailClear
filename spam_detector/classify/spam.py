@@ -1,7 +1,20 @@
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
+import os
 
-MODEL_NAME = 'bert-base-uncased'
+# Define path to the fine-tuned model in the root directory
+# __file__ is inside spam_detector/classify/spam.py
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+FINE_TUNED_MODEL_PATH = os.path.join(BASE_DIR, 'fine_tuned_spam_model')
+
+# Check if fine-tuned model exists, otherwise fallback to base model
+if os.path.exists(FINE_TUNED_MODEL_PATH) and os.path.isdir(FINE_TUNED_MODEL_PATH):
+    print("✅ Loading fine-tuned spam model from local directory...")
+    MODEL_NAME = FINE_TUNED_MODEL_PATH
+else:
+    print("⚠️ Fine-tuned model not found. Falling back to the untrained base model...")
+    MODEL_NAME = 'bert-base-uncased'
+
 tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
 model = BertForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
