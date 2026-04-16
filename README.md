@@ -1,17 +1,20 @@
-# Spam Email Detection (Django + BERT)
+# MailClear (Django + Fine-Tuned BERT)
 
-A Django web app that classifies email text as `spam` or `ham` using a BERT-based classifier from Hugging Face Transformers.
+A modern, highly accurate Django web application that classifies email text as `spam` or `safe` using a custom fine-tuned BERT-based classifier.
 
 ## Features
-- Web form to paste email content (subject + body)
-- Spam/Not-spam prediction with confidence score
-- Simple Django UI and routing
+- **Sleek UI**: Modern glassmorphic dark-mode web forms for validating emails.
+- **Custom AI Model**: Uses locally fine-tuned BERT model weights for high accuracy classification.
+- **Instant Feedback**: Real-time spam/not-spam predictions along with percentage confidence scores.
 
 ## Project Structure
 
 ```text
 Spam_email_detection/
 |-- requirements.txt
+|-- train.py                 <-- Fine-tuning script for BERT
+|-- fix_reqs.py
+|-- fine_tuned_spam_model/   <-- Local directory for your model weights (git-ignored)
 |-- spam_detector/
 |   |-- manage.py
 |   |-- db.sqlite3
@@ -20,7 +23,7 @@ Spam_email_detection/
 |   |   |-- urls.py
 |   |   `-- asgi.py
 |   `-- classify/
-|       |-- spam.py
+|       |-- spam.py          <-- Model loading & inference logic
 |       |-- views.py
 |       |-- forms.py
 |       |-- urls.py
@@ -29,20 +32,20 @@ Spam_email_detection/
 
 ## Local Setup
 
-### 1. Clone and enter the repo
+### 1. Clone the repository
 ```bash
 git clone <your-repo-url>
 cd Spam_email_detection
 ```
 
 ### 2. Create and activate virtual environment
-Windows (PowerShell):
+**Windows (PowerShell):**
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-Linux/macOS:
+**Linux/macOS:**
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -53,13 +56,20 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run migrations
+### 4. Fine-Tune the Model (Optional)
+This repository includes a `train.py` script to generate custom fine-tuned model weights.
+```bash
+python train.py
+```
+*Note: This will download datasets and train the model, eventually creating a `fine_tuned_spam_model/` folder. The app will automatically use these local weights if the folder exists, otherwise it will fallback to the un-trained base model.*
+
+### 5. Run migrations
 ```bash
 cd spam_detector
 python manage.py migrate
 ```
 
-### 5. Start development server
+### 6. Start development server
 ```bash
 python manage.py runserver
 ```
@@ -67,15 +77,14 @@ python manage.py runserver
 Open: `http://127.0.0.1:8000/`
 
 ## How Prediction Works
-- Model is loaded in `spam_detector/classify/spam.py`
-- Uses `bert-base-uncased` tokenizer and sequence classifier (`num_labels=2`)
-- Returns:
-  - `label`: `spam` or `ham`
-  - `confidence`: probability of predicted class
+- The AI inference logic lives in `spam_detector/classify/spam.py`.
+- It attempts to load custom weights from `../fine_tuned_spam_model/`.
+- If custom weights are unavailable, it defaults to the generic `bert-base-uncased` tokenizer and sequence classifier (`num_labels=2`).
+- Returns `spam` or `ham` class with a normalized confidence score display (0-100%).
 
 ## Deployment Notes (Render / Railway)
 
-This repo is a Django project inside the `spam_detector/` folder, so configure that as root/workdir on hosting platforms.
+This repo is a Django project inside the `spam_detector/` folder, so configure that as root/workdir on hosting platforms. **Keep in mind you must train or upload your model weights to your host since they are excluded from Git**.
 
 ### Render
 - Root Directory: `spam_detector`

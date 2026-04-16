@@ -279,3 +279,7 @@ pyrightconfig.json
 *.hgtags
 *dist/
 traceback.log
+
+# Model Weights and Training Checkpoints
+fine_tuned_spam_model/
+results/
