@@ -8,10 +8,6 @@ MailClear provides an accessible way to screen suspicious email content before a
 
 The project includes both the web application and a model-training workflow. `train.py` fine-tunes `bert-base-uncased` on the UCI SMS Spam Collection dataset, evaluates the model using accuracy, precision, recall, and F1 score, and saves the resulting model files locally. At runtime, the application loads those fine-tuned weights when available; otherwise, it falls back to the base BERT model.
 
-## GitHub Link Project
-
-[https://github.com/Ankit-euphemism/MailClear](https://github.com/Ankit-euphemism/MailClear)
-
 ## Key Features and Technologies
 
 - **Spam classification:** Predicts `spam` or `ham` from user-provided email/message text.
