@@ -14,9 +14,11 @@ if os.path.exists(FINE_TUNED_MODEL_PATH) and os.path.isdir(FINE_TUNED_MODEL_PATH
 else:
     print("⚠️ Fine-tuned model not found. Falling back to the untrained base model...")
     MODEL_NAME = 'bert-base-uncased'
+    
+HF_TOKEN = os.getenv('HF_TOKEN')
 
-tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
-model = BertForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+tokenizer = BertTokenizer.from_pretrained(MODEL_NAME, token=HF_TOKEN)
+model = BertForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2,token=HF_TOKEN)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
@@ -27,7 +29,7 @@ def predict_spam(text):
         outputs = model(**inputs)
         logits = outputs.logits
         probabilities = torch.nn.functional.softmax(logits, dim=1)
-        predicted_class = torch.argmax(logits, dim=1).item()
+        predicted_class = int(torch.argmax(logits, dim=1).item())
         confidence = probabilities[0][predicted_class].item()
     return {
         "label": "spam" if predicted_class == 1 else "ham",

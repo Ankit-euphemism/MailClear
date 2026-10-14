@@ -1,6 +1,27 @@
-# MailClear (Django + Fine-Tuned BERT)
+# MailClear
 
-A modern, highly accurate Django web application that classifies email text as `spam` or `safe` using a custom fine-tuned BERT-based classifier.
+MailClear is a Django web application that classifies submitted email or message text as `spam` or `ham` (legitimate). It uses a BERT sequence-classification model and displays the predicted label with its confidence score in a simple web interface.
+
+## Project Description in Details
+
+MailClear provides an accessible way to screen suspicious email content before a user interacts with it. The Django application accepts message text through a browser form, tokenizes it with a BERT tokenizer, and runs it through a two-class Transformer model. The result page reports whether the text is likely spam or ham, together with a normalized confidence percentage.
+
+The project includes both the web application and a model-training workflow. `train.py` fine-tunes `bert-base-uncased` on the UCI SMS Spam Collection dataset, evaluates the model using accuracy, precision, recall, and F1 score, and saves the resulting model files locally. At runtime, the application loads those fine-tuned weights when available; otherwise, it falls back to the base BERT model.
+
+## Key Features and Technologies
+
+- **Spam classification:** Predicts `spam` or `ham` from user-provided email/message text.
+- **Confidence score:** Displays the model probability for the predicted class as a percentage.
+- **Fine-tuning workflow:** Includes a reproducible training script using the UCI SMS Spam Collection dataset.
+- **Local model support:** Automatically loads model weights from `fine_tuned_spam_model/` when they have been trained or supplied.
+- **Web interface:** Django form handling and templates provide a straightforward browser-based experience.
+- **Technologies:** Python, Django, PyTorch, Hugging Face Transformers, Hugging Face Datasets, scikit-learn, and Daphne (ASGI server).
+
+## Problem Statement and Proposed Solution
+
+Unsolicited and deceptive messages can expose users to phishing, fraud, and unwanted content. Manually deciding whether every unfamiliar message is trustworthy is time-consuming and inconsistent, especially when messages use persuasive language or misleading offers.
+
+MailClear addresses this by applying natural-language processing to the text of a message. A BERT-based classifier learns patterns associated with spam and legitimate messages from labeled examples, then provides an immediate prediction and confidence score through a Django web app. This gives users a quick initial screening tool while keeping the model-training and deployment workflow contained in one project.
 
 ## Features
 - **Sleek UI**: Modern glassmorphic dark-mode web forms for validating emails.
@@ -32,6 +53,8 @@ Spam_email_detection/
 
 ## Local Setup
 
+
+
 ### 1. Clone the repository
 ```bash
 git clone <your-repo-url>
@@ -47,13 +70,28 @@ python -m venv .venv
 
 **Linux/macOS:**
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
 ### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
+```
+
+### Run locally with the launcher scripts
+
+After creating the virtual environment and installing dependencies, run the launcher from the project root. Each launcher activates the environment, optionally trains the model, and starts the Django development server.
+
+**Windows (PowerShell or Command Prompt):**
+```powershell
+.\run_project.bat
+```
+
+**macOS/Linux (Terminal):**
+```bash
+chmod +x run_project.sh
+./run_project.sh
 ```
 
 ### 4. Fine-Tune the Model (Optional)

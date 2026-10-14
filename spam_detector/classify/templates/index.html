@@ -1,357 +1,418 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MailClear - AI Spam Detection</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-color: #0f172a;
-            --surface: rgba(30, 41, 59, 0.7);
-            --border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --glow-spam: rgba(239, 68, 68, 0.2);
-            --glow-safe: rgba(34, 197, 94, 0.2);
-        }
+      :root {
+        --primary: #6366f1;
+        --primary-hover: #4f46e5;
+        --bg-color: #0f172a;
+        --surface: rgba(30, 41, 59, 0.7);
+        --border: rgba(255, 255, 255, 0.1);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --glow-spam: rgba(239, 68, 68, 0.2);
+        --glow-safe: rgba(34, 197, 94, 0.2);
+      }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
+      body {
+        font-family: "Outfit", sans-serif;
+        background-color: var(--bg-color);
+        background-image:
+          radial-gradient(
+            circle at 15% 50%,
+            rgba(99, 102, 241, 0.15) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 85% 30%,
+            rgba(236, 72, 153, 0.1) 0%,
+            transparent 50%
+          );
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
 
-        .card {
-            width: 100%;
-            max-width: 800px;
-            background: var(--surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            padding: 40px;
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.8s ease-out;
-        }
+      .card {
+        width: 100%;
+        max-width: 800px;
+        background: var(--surface);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        padding: 40px;
+        position: relative;
+        overflow: hidden;
+        animation: fadeIn 0.8s ease-out;
+      }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #6366f1, #ec4899, #8b5cf6);
-        }
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #6366f1, #ec4899, #8b5cf6);
+      }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
-
-        .header-container {
-            text-align: center;
-            margin-bottom: 32px;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
+      }
 
-        h1 {
-            font-size: 36px;
-            font-weight: 700;
-            background: linear-gradient(to right, #ffffff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+      .header-container {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+
+      h1 {
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(to right, #ffffff, #a5b4fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+      }
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 16px;
+        font-weight: 300;
+      }
+
+      label {
+        display: none;
+      }
+
+      .input-wrapper {
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .email-input {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 16px;
+        line-height: 1.6;
+        resize: vertical;
+        min-height: 180px;
+        outline: none;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .email-input::placeholder {
+        color: #475569;
+      }
+
+      .email-input:focus {
+        border-color: var(--primary);
+        box-shadow:
+          0 0 0 4px rgba(99, 102, 241, 0.15),
+          inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .hint {
+        position: absolute;
+        bottom: -24px;
+        left: 12px;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .errorlist {
+        list-style: none;
+        margin: 16px 0;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+        font-size: 14px;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 36px;
+      }
+
+      button {
+        background: linear-gradient(
+          135deg,
+          var(--primary),
+          var(--primary-hover)
+        );
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 14px 32px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      /* Results styling */
+      .result-container {
+        margin-top: 40px;
+        padding: 24px;
+        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid var(--border);
+        text-align: center;
+        animation: slideUp 0.5s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 16px;
-            font-weight: 300;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
+      }
 
-        label {
-            display: none;
-        }
+      .result-title {
+        color: var(--text-muted);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+      }
 
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 24px;
-        }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 32px;
+        border-radius: 999px;
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 32px var(--glow);
+      }
 
-        .email-input {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            color: var(--text-main);
-            font-family: inherit;
-            font-size: 16px;
-            line-height: 1.6;
-            resize: vertical;
-            min-height: 180px;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
+      .badge-spam {
+        --glow: var(--glow-spam);
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
 
-        .email-input::placeholder {
-            color: #475569;
-        }
+      .badge-safe {
+        --glow: var(--glow-safe);
+        background: rgba(34, 197, 94, 0.15);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
 
-        .email-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), inset 0 2px 4px rgba(0,0,0,0.2);
-        }
+      .confidence-meter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 15px;
+        color: var(--text-main);
+      }
 
-        .hint {
-            position: absolute;
-            bottom: -24px;
-            left: 12px;
-            color: var(--text-muted);
-            font-size: 13px;
-        }
+      .progress-bar-bg {
+        width: 150px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
 
-        .errorlist {
-            list-style: none;
-            margin: 16px 0;
-            padding: 12px 16px;
-            border-radius: 12px;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            font-size: 14px;
-        }
+      .progress-bar-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: 999px;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      }
 
-        .actions {
-            display: flex;
-            justify-content: center;
-            margin-top: 36px;
-        }
+      .fill-spam {
+        background: #ef4444;
+      }
+      .fill-safe {
+        background: #22c55e;
+      }
 
-        button {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-family: inherit;
-            font-weight: 600;
-            font-size: 16px;
-            padding: 14px 32px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+      .messages {
+        margin: 20px 0 0;
+        padding: 0;
+        list-style: none;
+      }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* Results styling */
-        .result-container {
-            margin-top: 40px;
-            padding: 24px;
-            border-radius: 16px;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border);
-            text-align: center;
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-title {
-            color: var(--text-muted);
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 32px;
-            border-radius: 999px;
-            font-size: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-            box-shadow: 0 8px 32px var(--glow);
-        }
-
-        .badge-spam {
-            --glow: var(--glow-spam);
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .badge-safe {
-            --glow: var(--glow-safe);
-            background: rgba(34, 197, 94, 0.15);
-            color: #86efac;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-
-        .confidence-meter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-size: 15px;
-            color: var(--text-main);
-        }
-
-        .progress-bar-bg {
-            width: 150px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 999px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            border-radius: 999px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .fill-spam { background: #ef4444; }
-        .fill-safe { background: #22c55e; }
-
-        .messages {
-            margin: 20px 0 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .messages li {
-            padding: 12px 16px;
-            border-radius: 12px;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            color: #7dd3fc;
-            font-size: 14px;
-            text-align: center;
-        }
+      .messages li {
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        color: #7dd3fc;
+        font-size: 14px;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="card">
-        <div class="header-container">
-            <h1>MailClear</h1>
-            <p class="subtitle">Next-gen AI Spam Detection. Paste your email below.</p>
+      <div class="header-container">
+        <h1>MailClear</h1>
+        <p class="subtitle">
+          Next-gen AI Spam Detection. Paste your email below.
+        </p>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="input-wrapper">
+          <label for="id_email_text">{{ form.email_text.label }}</label>
+          {{ form.email_text }}
+          <div class="hint">
+            Ensure you include the subject and body for the highest accuracy.
+          </div>
         </div>
+        {{ form.email_text.errors }}
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="input-wrapper">
-                <label for="id_email_text">{{ form.email_text.label }}</label>
-                {{ form.email_text }}
-                <div class="hint">Ensure you include the subject and body for the highest accuracy.</div>
-            </div>
-            {{ form.email_text.errors }}
+        <div class="actions">
+          <button type="submit">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+              <path d="M9 10h.01"></path>
+              <path d="M15 10h.01"></path>
+              <path d="M12 10h.01"></path>
+            </svg>
+            Analyze Content
+          </button>
+        </div>
+      </form>
 
-            <div class="actions">
-                <button type="submit">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M9 10h.01"></path><path d="M15 10h.01"></path><path d="M12 10h.01"></path></svg>
-                    Analyze Content
-                </button>
-            </div>
-        </form>
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %} {% if result %}
+      <div class="result-container">
+        <div class="result-title">Analysis Complete</div>
 
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+        {% if result.label == 'spam' %}
+        <div class="badge badge-spam">🚨 Spam</div>
+        {% else %}
+        <div class="badge badge-safe">✅ Safe</div>
         {% endif %}
 
-        {% if result %}
-            <div class="result-container">
-                <div class="result-title">Analysis Complete</div>
-
-                {% if result.label == 'spam' %}
-                    <div class="badge badge-spam">🚨 Spam</div>
-                {% else %}
-                    <div class="badge badge-safe">✅ Safe</div>
-                {% endif %}
-
-                <div class="confidence-meter">
-                    <span>Confidence: <strong id="conf-text">{{ result.confidence|floatformat:4 }}</strong></span>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill {% if result.label == 'spam' %}fill-spam{% else %}fill-safe{% endif %}" id="conf-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
+        <div class="confidence-meter">
+          <span
+            >Confidence:
+            <strong id="conf-text"
+              >{{ result.confidence|floatformat:4 }}</strong
+            ></span
+          >
+          <div class="progress-bar-bg">
+            <div
+              class="progress-bar-fill {% if result.label == 'spam' %}fill-spam{% else %}fill-safe{% endif %}"
+              id="conf-bar"
+              style="width: 0%"
+            ></div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Style the Django-generated text area
-            const inputs = document.querySelectorAll('textarea');
-            inputs.forEach(input => {
-                input.classList.add('email-input');
-                input.placeholder = "Subject: Action Required\n\nDear user,\nPlease review your account details by clicking the link...";
-            });
-
-            // Convert confidence to percentage and animate bar
-            const confText = document.getElementById('conf-text');
-            const confBar = document.getElementById('conf-bar');
-            if (confText && confBar) {
-                const val = parseFloat(confText.innerText);
-                if (!isNaN(val)) {
-                    let percentage = val;
-                    // If the backend returns a decimal under 1, treat as percentage
-                    if (val <= 1.0) {
-                        percentage = val * 100;
-                    }
-                    confText.innerText = percentage.toFixed(2) + '%';
-                    setTimeout(() => {
-                        confBar.style.width = percentage + '%';
-                    }, 100);
-                }
-            }
+      document.addEventListener("DOMContentLoaded", () => {
+        // Style the Django-generated text area
+        const inputs = document.querySelectorAll("textarea");
+        inputs.forEach((input) => {
+          input.classList.add("email-input");
+          input.placeholder =
+            "Dear user,\nPlease review your account details by clicking the link...";
         });
+
+        // Convert confidence to percentage and animate bar
+        const confText = document.getElementById("conf-text");
+        const confBar = document.getElementById("conf-bar");
+        if (confText && confBar) {
+          const val = parseFloat(confText.innerText);
+          if (!isNaN(val)) {
+            let percentage = val;
+            // If the backend returns a decimal under 1, treat as percentage
+            if (val <= 1.0) {
+              percentage = val * 100;
+            }
+            confText.innerText = percentage.toFixed(2) + "%";
+            setTimeout(() => {
+              confBar.style.width = percentage + "%";
+            }, 100);
+          }
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

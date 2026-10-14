@@ -1,14 +1,19 @@
 import os
 import torch
 from datasets import load_dataset
+from dotenv import load_dotenv
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+# Load local configuration without committing secrets.
+load_dotenv()
 
 # 1. Configuration
 MODEL_NAME = 'bert-base-uncased'
 OUTPUT_DIR = './fine_tuned_spam_model'
 EPOCHS = 3
 BATCH_SIZE = 8
+HF_TOKEN = os.getenv('HF_TOKEN')
 
 # Check if CUDA is available for GPU training
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -28,8 +33,8 @@ def compute_metrics(pred):
 
 def main():
     print("Loading SMS Spam dataset...")
-    # Load the sms_spam dataset from Hugging Face
-    dataset = load_dataset("sms_spam")
+    # Use the canonical namespace-qualified repository ID.
+    dataset = load_dataset("ucirvine/sms_spam", token=HF_TOKEN)
     
     # The dataset has a 'train' split which we can split further
     dataset = dataset['train'].train_test_split(test_size=0.2, seed=42)
@@ -37,7 +42,7 @@ def main():
     test_dataset = dataset['test']
     
     print("Loading Tokenizer...")
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
+    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME, token=HF_TOKEN)
     
     def tokenize_function(examples):
         # sms_spam has features: 'sms' (text) and 'label' (0 or 1)
@@ -55,7 +60,11 @@ def main():
     tokenized_test.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
     
     print("Loading Model...")
-    model = BertForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+    model = BertForSequenceClassification.from_pretrained(
+        MODEL_NAME,
+        num_labels=2,
+        token=HF_TOKEN,
+    )
     model.to(device)
     
     training_args = TrainingArguments(
@@ -65,11 +74,11 @@ def main():
         per_device_eval_batch_size=BATCH_SIZE,
         warmup_steps=500,
         weight_decay=0.01,
-        logging_dir='./logs',
         logging_steps=10,
         eval_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
+        dataloader_pin_memory=torch.cuda.is_available(),
     )
     
     trainer = Trainer(
