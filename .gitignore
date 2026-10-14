@@ -133,6 +133,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -283,3 +285,4 @@ traceback.log
 # Model Weights and Training Checkpoints
 fine_tuned_spam_model/
 results/
+fix_reqs.py
